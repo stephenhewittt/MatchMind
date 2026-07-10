@@ -111,7 +111,7 @@ export default function Onboarding() {
     <div className="mx-auto min-h-screen max-w-3xl px-6 py-10">
       <div className="mb-10 flex items-center justify-between">
         <button onClick={() => navigate("/")}>
-          <Logo size="text-xl" />
+          <Logo size="text-2xl" />
         </button>
         <span className="text-xs uppercase tracking-widest text-zinc-500">
           Step {step + 1} of {STEPS.length}

@@ -22,7 +22,7 @@ export default function Layout({ children }: { children: ReactNode }) {
     <div className="flex min-h-screen">
       <aside className="fixed inset-y-0 left-0 z-20 hidden w-64 flex-col border-r border-ink-700/70 bg-ink-900/90 backdrop-blur lg:flex">
         <button onClick={() => navigate("/")} className="flex items-center gap-2 px-6 py-6 text-left">
-          <Logo size="text-xl" />
+          <Logo size="text-2xl" />
         </button>
         <div className="hairline" />
 
@@ -90,7 +90,7 @@ export default function Layout({ children }: { children: ReactNode }) {
       {/* Mobile top bar */}
       <div className="fixed inset-x-0 top-0 z-20 flex items-center justify-between border-b border-ink-700/70 bg-ink-900/95 px-4 py-3 backdrop-blur lg:hidden">
         <button onClick={() => navigate("/")}>
-          <Logo size="text-lg" />
+          <Logo size="text-xl" />
         </button>
         <nav className="flex gap-1 overflow-x-auto">
           {NAV.map((item) => (

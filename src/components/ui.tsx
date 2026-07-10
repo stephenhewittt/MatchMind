@@ -2,11 +2,11 @@ import type { ReactNode } from "react";
 import { TIER_META } from "../lib/types";
 import type { PrivacyTier } from "../lib/types";
 
-export function Logo({ size = "text-2xl" }: { size?: string }) {
+export function Logo({ size = "text-3xl" }: { size?: string }) {
   return (
-    <span className={`font-display font-semibold tracking-wide ${size}`}>
+    <span className={`font-display font-bold tracking-wide ${size}`}>
       <span className="text-zinc-100">Match</span>
-      <span className="gold-text">Mind</span>
+      <span className="text-gold-400">Mind</span>
     </span>
   );
 }
