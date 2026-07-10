@@ -3,11 +3,54 @@ import type { ReactNode } from "react";
 import { TIER_META } from "../lib/types";
 import type { PrivacyTier } from "../lib/types";
 
-export function Logo({ size = "text-3xl" }: { size?: string }) {
+/** Sleek gold neural-brain glyph used in the MatchMind wordmark. */
+export function BrainMark({ className = "h-8 w-8" }: { className?: string }) {
   return (
-    <span className={`font-display font-bold tracking-wide ${size}`}>
-      <span className="text-zinc-100">Match</span>
-      <span className="text-gold-400">Mind</span>
+    <svg viewBox="0 0 48 48" fill="none" className={className} aria-hidden="true">
+      <defs>
+        <linearGradient id="mm-brain-grad" x1="6" y1="6" x2="42" y2="42" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#f3ddab" />
+          <stop offset="0.5" stopColor="#d9b25c" />
+          <stop offset="1" stopColor="#a8783f" />
+        </linearGradient>
+      </defs>
+      {/* Brain silhouette (left profile) */}
+      <path
+        d="M24 9.5c-3-2.6-8.2-2-10.4 1.3-3.4-.6-6.3 2.4-5.6 5.8-2.8 1.7-2.9 6-.1 7.8-1.2 3.2 1.2 6.8 4.6 6.8.9 2.9 4.3 4.2 6.8 2.6 2.2 1.9 5.8 1 6.9-1.7"
+        stroke="url(#mm-brain-grad)"
+        strokeWidth="2.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M24 9.5c3-2.6 8.2-2 10.4 1.3 3.4-.6 6.3 2.4 5.6 5.8 2.8 1.7 2.9 6 .1 7.8 1.2 3.2-1.2 6.8-4.6 6.8-.9 2.9-4.3 4.2-6.8 2.6-2.2 1.9-5.8 1-6.9-1.7"
+        stroke="url(#mm-brain-grad)"
+        strokeWidth="2.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      {/* Central fissure */}
+      <path d="M24 9.5V33" stroke="url(#mm-brain-grad)" strokeWidth="2.4" strokeLinecap="round" />
+      {/* Neural folds / circuits */}
+      <path d="M24 15.5c-3 .3-4.5 2.4-3.9 5" stroke="url(#mm-brain-grad)" strokeWidth="1.7" strokeLinecap="round" opacity="0.85" />
+      <path d="M24 19c3 .3 4.6 2.6 3.8 5.4" stroke="url(#mm-brain-grad)" strokeWidth="1.7" strokeLinecap="round" opacity="0.85" />
+      {/* Synapse nodes */}
+      <circle cx="14" cy="20.6" r="1.7" fill="url(#mm-brain-grad)" />
+      <circle cx="20.1" cy="20.5" r="1.5" fill="url(#mm-brain-grad)" />
+      <circle cx="27.8" cy="24.4" r="1.5" fill="url(#mm-brain-grad)" />
+      <circle cx="33.6" cy="18.4" r="1.7" fill="url(#mm-brain-grad)" />
+    </svg>
+  );
+}
+
+export function Logo({ size = "text-3xl", withMark = true }: { size?: string; withMark?: boolean }) {
+  return (
+    <span className={`inline-flex items-center gap-2 font-display font-bold tracking-wide ${size}`}>
+      {withMark && <BrainMark className="h-[1.15em] w-[1.15em] shrink-0 drop-shadow-[0_0_8px_rgba(217,178,92,0.25)]" />}
+      <span>
+        <span className="text-zinc-100">Match</span>
+        <span className="text-gold-400">Mind</span>
+      </span>
     </span>
   );
 }
