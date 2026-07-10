@@ -81,7 +81,7 @@ export default function AgentConversation({
   yourAgent: string;
 }) {
   const msgs = match.transcript;
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   const [revealed, setRevealed] = useState(msgs.length);
   const [typing, setTyping] = useState(false);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
@@ -142,18 +142,44 @@ export default function AgentConversation({
       </div>
 
       {/* Dropdown toggle */}
-      <button
-        onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center justify-between border-t border-ink-700/60 px-5 py-3.5 text-sm text-zinc-300 transition-colors hover:bg-ink-800/60 sm:px-6"
-        aria-expanded={open}
-      >
-        <span className="flex items-center gap-2 font-medium">
-          <span className="text-gold-500">💬</span>
-          {open ? "Hide the conversation" : "Read the full conversation"}
-          <span className="text-xs font-normal text-zinc-500">· {msgs.length} messages</span>
-        </span>
-        <span className={`text-gold-500 transition-transform duration-300 ${open ? "rotate-180" : ""}`}>▾</span>
-      </button>
+      {open ? (
+        <button
+          onClick={() => setOpen(false)}
+          className="flex w-full items-center justify-between border-t border-ink-700/60 px-5 py-3.5 text-sm text-zinc-300 transition-colors hover:bg-ink-800/60 sm:px-6"
+          aria-expanded
+        >
+          <span className="flex items-center gap-2 font-medium">
+            <span className="text-gold-500">💬</span>
+            Hide the conversation
+            <span className="text-xs font-normal text-zinc-500">· {msgs.length} messages</span>
+          </span>
+          <span className="text-gold-500 transition-transform duration-300 rotate-180">▾</span>
+        </button>
+      ) : (
+        <button
+          onClick={() => setOpen(true)}
+          className="group relative block w-full overflow-hidden border-t border-gold-600/40 px-5 py-4 text-left sm:px-6"
+          aria-expanded={false}
+        >
+          {/* Always-on gold sheen to draw the eye */}
+          <span className="pointer-events-none absolute inset-0 animate-shimmer bg-gradient-to-r from-gold-500/[0.08] via-gold-400/20 to-gold-500/[0.08] bg-[length:200%_100%]" />
+          <span className="relative flex items-center justify-between gap-3">
+            <span className="flex items-center gap-3">
+              <span className="flex h-10 w-10 shrink-0 animate-pulse-gold items-center justify-center rounded-full bg-gold-500/15 text-gold-300">▷</span>
+              <span>
+                <span className="block font-display text-base font-semibold text-gold-200">Read the full conversation</span>
+                <span className="block text-xs text-zinc-400">
+                  See exactly how {yourAgent} &amp; {candidateAgent} found your match · {msgs.length} messages
+                </span>
+              </span>
+            </span>
+            <span className="flex items-center gap-2 text-sm font-medium text-gold-300">
+              <span className="hidden sm:inline">Open</span>
+              <span className="transition-transform duration-300 group-hover:translate-y-0.5">▾</span>
+            </span>
+          </span>
+        </button>
+      )}
 
       {/* Transcript (LIGHT / white for readability) */}
       {open && (

@@ -98,55 +98,25 @@ export default function MatchDetail() {
         )}
       </div>
 
-      {/* Featured: the agent-to-agent conversation */}
-      <div className="mb-6">
-        <AgentConversation match={match} yourAgent={profile.agentName} candidateAgent={candidate.agentName} />
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Report */}
-        <div className="space-y-6">
-          <div className="card p-6">
-            <h3 className="mb-4 font-display text-lg font-semibold text-gold-400">Why this match makes sense</h3>
-            <div className="space-y-3">
-              {match.dimensions.map((d) => <Bar key={d.label} label={d.label} score={d.score} />)}
-            </div>
-            <div className="hairline my-5" />
-            <ul className="space-y-2.5">
-              {match.signals.map((s, i) => (
-                <li key={i} className="flex gap-2.5 text-sm text-zinc-300">
-                  <span className="text-gold-500">◆</span><span className="leading-snug">{s}</span>
-                </li>
-              ))}
-            </ul>
+      {/* Priority row: why this match + connect / schedule on top */}
+      <div className="mb-6 grid gap-6 lg:grid-cols-2">
+        {/* Why this match makes sense */}
+        <div className="card p-6">
+          <h3 className="mb-4 font-display text-lg font-semibold text-gold-400">Why this match makes sense</h3>
+          <div className="space-y-3">
+            {match.dimensions.map((d) => <Bar key={d.label} label={d.label} score={d.score} />)}
           </div>
-
-          <div className="card p-6">
-            <h3 className="mb-3 font-display text-lg font-semibold text-zinc-200">Honest concerns</h3>
-            <ul className="space-y-2.5">
-              {match.concerns.map((c, i) => (
-                <li key={i} className="flex gap-2.5 text-sm text-zinc-400">
-                  <span className="text-amber-glow/80">▲</span><span className="leading-snug">{c}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="card p-6">
-            <h3 className="mb-3 font-display text-lg font-semibold text-zinc-200">Conversation starters</h3>
-            <ul className="space-y-2.5">
-              {match.starters.map((s, i) => (
-                <li key={i} className="flex gap-2.5 text-sm text-zinc-300">
-                  <span className="text-gold-500">✎</span><span className="leading-snug">{s}</span>
-                </li>
-              ))}
-            </ul>
-            <div className="hairline my-4" />
-            <p className="text-xs text-zinc-500"><span className="text-gold-500">Recommended next step:</span> {match.nextStep}</p>
-          </div>
+          <div className="hairline my-5" />
+          <ul className="space-y-2.5">
+            {match.signals.map((s, i) => (
+              <li key={i} className="flex gap-2.5 text-sm text-zinc-300">
+                <span className="text-gold-500">◆</span><span className="leading-snug">{s}</span>
+              </li>
+            ))}
+          </ul>
         </div>
 
-        {/* Right column: chat / scheduling / feedback */}
+        {/* Connect + schedule */}
         <div className="space-y-6">
           {match.status === "mutual" ? (
             <div className="card flex flex-col p-0">
@@ -225,6 +195,43 @@ export default function MatchDetail() {
             </div>
           )}
 
+        </div>
+      </div>
+
+      {/* Agent conversation (collapsed, enticing) */}
+      <div className="mb-6">
+        <AgentConversation match={match} yourAgent={profile.agentName} candidateAgent={candidate.agentName} />
+      </div>
+
+      {/* Secondary details */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <div className="space-y-6">
+          <div className="card p-6">
+            <h3 className="mb-3 font-display text-lg font-semibold text-zinc-200">Honest concerns</h3>
+            <ul className="space-y-2.5">
+              {match.concerns.map((c, i) => (
+                <li key={i} className="flex gap-2.5 text-sm text-zinc-400">
+                  <span className="text-amber-glow/80">▲</span><span className="leading-snug">{c}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="card p-6">
+            <h3 className="mb-3 font-display text-lg font-semibold text-zinc-200">Conversation starters</h3>
+            <ul className="space-y-2.5">
+              {match.starters.map((s, i) => (
+                <li key={i} className="flex gap-2.5 text-sm text-zinc-300">
+                  <span className="text-gold-500">✎</span><span className="leading-snug">{s}</span>
+                </li>
+              ))}
+            </ul>
+            <div className="hairline my-4" />
+            <p className="text-xs text-zinc-500"><span className="text-gold-500">Recommended next step:</span> {match.nextStep}</p>
+          </div>
+        </div>
+
+        <div className="space-y-6">
           {/* Feedback */}
           {(match.status === "mutual" || match.status === "declined") && (
             <div className="card p-6">
