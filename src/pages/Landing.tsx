@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useStore } from "../lib/store";
 import { AgentOrb, Logo } from "../components/ui";
@@ -5,8 +6,21 @@ import BrainCanvas from "../components/BrainCanvas";
 import ProfileGrid from "../components/ProfileGrid";
 import Reveal from "../components/Reveal";
 import CountUp from "../components/CountUp";
+import ScrollJourney from "../components/ScrollJourney";
+import type { JourneySection } from "../components/ScrollJourney";
 import { INTENT_META } from "../lib/types";
 import type { MatchIntent } from "../lib/types";
+
+const JOURNEY: JourneySection[] = [
+  { id: "hero", label: "Intro" },
+  { id: "formation", label: "Form" },
+  { id: "profiles", label: "Minds" },
+  { id: "categories", label: "Connect" },
+  { id: "features", label: "Depth" },
+  { id: "network", label: "Live" },
+  { id: "privacy", label: "Privacy" },
+  { id: "start", label: "Join" },
+];
 
 const FEATURES = [
   { icon: "◈", title: "Personal AI Agent", text: "A private agent that understands your personality, goals, boundaries, and communication style — and searches on your behalf." },
@@ -48,9 +62,31 @@ const TESTIMONIALS = [
 export default function Landing() {
   const navigate = useNavigate();
   const { profile } = useStore();
+  const heroVisualRef = useRef<HTMLDivElement>(null);
+
+  // Parallax: the hero brain drifts up and fades as you scroll away.
+  useEffect(() => {
+    const el = heroVisualRef.current;
+    if (!el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let raf = 0;
+    const onScroll = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const y = window.scrollY;
+        el.style.transform = `translateY(${y * 0.18}px)`;
+        el.style.opacity = String(Math.max(0, 1 - y / 650));
+      });
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", onScroll);
+    };
+  }, []);
 
   return (
     <div className="min-h-screen overflow-x-hidden">
+      <ScrollJourney sections={JOURNEY} />
       <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
         <Logo />
         <nav className="flex items-center gap-3">
@@ -64,7 +100,7 @@ export default function Landing() {
       </header>
 
       {/* Hero (dark) */}
-      <section className="relative mx-auto max-w-6xl px-6 pb-10 pt-10 text-center">
+      <section id="hero" className="relative mx-auto max-w-6xl px-6 pb-10 pt-10 text-center">
         <div className="animate-fade-up">
           <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-gold-600/40 bg-gold-500/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.3em] text-gold-400">
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-gold-400" />
@@ -90,7 +126,7 @@ export default function Landing() {
         </div>
 
         {/* Brain visual with floating telemetry */}
-        <div className="relative mx-auto mt-6 flex max-w-3xl items-center justify-center">
+        <div ref={heroVisualRef} className="relative mx-auto mt-6 flex max-w-3xl items-center justify-center will-change-transform">
           <BrainCanvas size={560} points={320} className="relative z-10" />
           <div className="absolute left-0 top-16 z-20 hidden animate-float md:block">
             <div className="card px-4 py-3 text-left shadow-gold-glow">
@@ -134,7 +170,7 @@ export default function Landing() {
       </div>
 
       {/* Formation timeline (LIGHT) */}
-      <section className="section-light">
+      <section id="formation" className="section-light">
         <div className="mx-auto max-w-6xl px-6 py-24">
           <Reveal>
             <div className="mb-3 text-center text-sm font-semibold uppercase tracking-[0.3em] text-bronze">Neural formation</div>
@@ -147,7 +183,7 @@ export default function Landing() {
           </Reveal>
           <div className="grid gap-6 md:grid-cols-4">
             {FORMATION.map((s, i) => (
-              <Reveal key={s.n} delay={i * 120}>
+              <Reveal key={s.n} delay={i * 120} variant={i % 2 === 0 ? "left" : "right"}>
                 <div className="card-light card-light-hover relative h-full overflow-hidden p-7">
                   <div className="absolute -right-3 -top-6 font-display text-8xl font-bold text-bronze/10">{s.n}</div>
                   <div className="mb-3 font-display text-sm font-semibold uppercase tracking-[0.2em] text-bronze">{s.n}</div>
@@ -161,7 +197,7 @@ export default function Landing() {
       </section>
 
       {/* Live profiles grid (dark) */}
-      <section className="mx-auto max-w-6xl px-6 py-24">
+      <section id="profiles" className="mx-auto max-w-6xl px-6 py-24">
         <Reveal>
           <div className="mb-3 text-center text-sm font-semibold uppercase tracking-[0.3em] text-gold-500">Minds on the network</div>
           <h2 className="mb-3 text-center font-display text-4xl font-bold tracking-tight text-zinc-100 sm:text-5xl">
@@ -183,7 +219,7 @@ export default function Landing() {
       </section>
 
       {/* Categories (LIGHT) */}
-      <section className="section-light">
+      <section id="categories" className="section-light">
         <div className="mx-auto max-w-6xl px-6 py-24">
           <Reveal>
             <h2 className="mb-3 text-center font-display text-4xl font-bold tracking-tight text-stone-900 sm:text-5xl">
@@ -216,7 +252,7 @@ export default function Landing() {
       </section>
 
       {/* Features (dark) */}
-      <section className="mx-auto max-w-6xl px-6 py-24">
+      <section id="features" className="mx-auto max-w-6xl px-6 py-24">
         <Reveal>
           <h2 className="mb-14 text-center font-display text-4xl font-bold tracking-tight text-zinc-100 sm:text-5xl">
             Deep intelligence. <span className="gold-text">Quiet confidence.</span>
@@ -238,7 +274,7 @@ export default function Landing() {
       </section>
 
       {/* Stats + testimonials (LIGHT) */}
-      <section className="section-light">
+      <section id="network" className="section-light">
         <div className="mx-auto max-w-6xl px-6 py-24">
           <Reveal>
             <div className="mb-3 text-center text-sm font-semibold uppercase tracking-[0.3em] text-bronze">The network, live</div>
@@ -266,7 +302,7 @@ export default function Landing() {
 
           <div className="grid gap-6 md:grid-cols-3">
             {TESTIMONIALS.map((t, i) => (
-              <Reveal key={t.name} delay={i * 120}>
+              <Reveal key={t.name} delay={i * 120} variant="scale">
                 <figure className="card-light card-light-hover flex h-full flex-col p-7">
                   <div className="mb-4 text-4xl leading-none text-bronze/40">“</div>
                   <blockquote className="flex-1 text-lg leading-relaxed text-stone-700">{t.quote}</blockquote>
@@ -290,8 +326,8 @@ export default function Landing() {
       </section>
 
       {/* Privacy callout (dark) */}
-      <section className="mx-auto max-w-4xl px-6 py-24">
-        <Reveal>
+      <section id="privacy" className="mx-auto max-w-4xl px-6 py-24">
+        <Reveal variant="scale">
           <div className="card relative overflow-hidden p-12 text-center shadow-gold-glow-lg">
             <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold-500/60 to-transparent" />
             <div className="mb-4 text-4xl text-gold-500">🛡</div>
@@ -309,7 +345,7 @@ export default function Landing() {
       </section>
 
       {/* CTA (dark) */}
-      <section className="relative mx-auto max-w-6xl px-6 pb-28 pt-4 text-center">
+      <section id="start" className="relative mx-auto max-w-6xl px-6 pb-28 pt-4 text-center">
         <Reveal>
           <div className="mx-auto mb-6 flex justify-center">
             <AgentOrb active size="h-16 w-16" />
