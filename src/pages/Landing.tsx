@@ -74,10 +74,9 @@ export default function Landing() {
             We build a <span className="animate-gradient">virtual brain</span>
             <br className="hidden sm:block" /> that finds your people.
           </h1>
-          <p className="mx-auto mt-7 max-w-2xl text-xl leading-relaxed text-zinc-300/90">
-            MatchMind turns who you are — your values, goals, humor, and boundaries — into a private
-            digital mind. Its agent speaks with other minds first, so you only ever meet people worth meeting.
-            Dating. Business. Friendship. Hobbies. Events.
+          <p className="mx-auto mt-7 max-w-xl text-xl leading-relaxed text-zinc-300/90">
+            We turn who you are into a private digital mind — its agent talks to other minds first,
+            so you only meet people worth meeting.
           </p>
           <div className="mt-9 flex flex-wrap items-center justify-center gap-4">
             <button onClick={() => navigate("/onboarding")} className="btn-gold px-8 py-3.5 text-base">
