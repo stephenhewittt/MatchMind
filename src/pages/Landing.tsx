@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useStore } from "../lib/store";
 import { AgentOrb, Logo } from "../components/ui";
 import BrainCanvas from "../components/BrainCanvas";
+import ProfileGrid from "../components/ProfileGrid";
 import Reveal from "../components/Reveal";
 import { INTENT_META } from "../lib/types";
 import type { MatchIntent } from "../lib/types";
@@ -126,6 +127,29 @@ export default function Landing() {
             </Reveal>
           ))}
         </div>
+      </section>
+
+      {/* Live profiles grid */}
+      <section className="mx-auto max-w-6xl px-6 pb-24">
+        <Reveal>
+          <div className="hairline mb-14" />
+          <div className="mb-3 text-center text-xs font-semibold uppercase tracking-[0.3em] text-gold-500">Minds on the network</div>
+          <h2 className="mb-3 text-center font-display text-4xl font-bold tracking-tight text-zinc-100">
+            Real people. <span className="gold-text">Real intentions.</span>
+          </h2>
+          <p className="mx-auto mb-12 max-w-xl text-center text-sm text-zinc-500">
+            Every member is a virtual brain your agent can talk to. Hover a profile to see the mind behind the face.
+          </p>
+        </Reveal>
+        <ProfileGrid />
+        <Reveal>
+          <p className="mt-8 text-center text-sm text-zinc-500">
+            <button onClick={() => navigate("/onboarding")} className="text-gold-400 hover:underline">
+              Build your own brain
+            </button>{" "}
+            and your agent starts talking to theirs tonight.
+          </p>
+        </Reveal>
       </section>
 
       {/* Categories */}
