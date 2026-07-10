@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { TIER_META } from "../lib/types";
 import type { PrivacyTier } from "../lib/types";
@@ -164,6 +165,44 @@ export function EmptyState({ icon, title, sub, action }: { icon: string; title: 
       <h3 className="font-display text-xl text-zinc-200">{title}</h3>
       <p className="mt-2 max-w-md text-sm text-zinc-500">{sub}</p>
       {action && <div className="mt-6">{action}</div>}
+    </div>
+  );
+}
+
+/** Pulsing "live" dot with a ping halo. */
+export function LiveDot({ tone = "emerald" }: { tone?: "emerald" | "gold" }) {
+  const solid = tone === "gold" ? "bg-gold-400" : "bg-emerald-500";
+  const halo = tone === "gold" ? "bg-gold-400" : "bg-emerald-400";
+  return (
+    <span className="relative flex h-2 w-2">
+      <span className={`absolute inline-flex h-full w-full animate-ping rounded-full ${halo} opacity-75`} />
+      <span className={`relative inline-flex h-2 w-2 rounded-full ${solid}`} />
+    </span>
+  );
+}
+
+/** A meter bar that grows from 0 to its target on mount. Works on light or dark. */
+export function GrowBar({
+  pct,
+  delay = 150,
+  light = false,
+  active = true,
+}: {
+  pct: number;
+  delay?: number;
+  light?: boolean;
+  active?: boolean;
+}) {
+  const [w, setW] = useState(0);
+  useEffect(() => {
+    const t = setTimeout(() => setW(pct), delay);
+    return () => clearTimeout(t);
+  }, [pct, delay]);
+  const track = light ? "bg-stone-200" : "bg-ink-700";
+  const fill = active ? "bg-gradient-to-r from-bronze via-gold-500 to-gold-300" : light ? "bg-stone-300" : "bg-ink-600";
+  return (
+    <div className={`h-2 overflow-hidden rounded-full ${track}`}>
+      <div className={`h-full rounded-full transition-[width] duration-1000 ease-out ${fill}`} style={{ width: `${w}%` }} />
     </div>
   );
 }

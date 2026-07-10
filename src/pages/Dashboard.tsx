@@ -1,10 +1,9 @@
-import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
 import BrainCanvas from "../components/BrainCanvas";
 import CountUp from "../components/CountUp";
 import Reveal from "../components/Reveal";
-import { AgentOrb, Avatar, Bar, EmptyState, ScoreRing, SectionTitle } from "../components/ui";
+import { AgentOrb, Avatar, Bar, EmptyState, GrowBar, LiveDot, ScoreRing, SectionTitle } from "../components/ui";
 import { useStore } from "../lib/store";
 import { INTENT_META, TIER_META } from "../lib/types";
 import type { MatchIntent } from "../lib/types";
@@ -27,37 +26,6 @@ const DEMAND: { intent: MatchIntent; count: number }[] = [
   { intent: "events", count: 5170 },
 ];
 const DEMAND_MAX = Math.max(...DEMAND.map((d) => d.count));
-
-/** A bar on the light panel that grows from 0 to its target on mount. */
-function DemandBar({ pct, active, delay }: { pct: number; active: boolean; delay: number }) {
-  const [w, setW] = useState(0);
-  useEffect(() => {
-    const t = setTimeout(() => setW(pct), delay);
-    return () => clearTimeout(t);
-  }, [pct, delay]);
-  return (
-    <div className="h-2 overflow-hidden rounded-full bg-stone-200">
-      <div
-        className={`h-full rounded-full transition-[width] duration-1000 ease-out ${
-          active ? "bg-gradient-to-r from-bronze to-gold-500" : "bg-stone-300"
-        }`}
-        style={{ width: `${w}%` }}
-      />
-    </div>
-  );
-}
-
-/** Pulsing "live" dot. */
-function LiveDot({ tone = "emerald" }: { tone?: "emerald" | "gold" }) {
-  const c = tone === "gold" ? "bg-gold-400" : "bg-emerald-500";
-  const c2 = tone === "gold" ? "bg-gold-400" : "bg-emerald-400";
-  return (
-    <span className="relative flex h-2 w-2">
-      <span className={`absolute inline-flex h-full w-full animate-ping rounded-full ${c2} opacity-75`} />
-      <span className={`relative inline-flex h-2 w-2 rounded-full ${c}`} />
-    </span>
-  );
-}
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -96,6 +64,21 @@ export default function Dashboard() {
     : insights.some((i) => i.status === "pending")
       ? "Review pending learning updates to keep your brain evolving."
       : "Rate matches and take calls — every interaction adds synapses.";
+
+  type Move = { icon: string; title: string; desc: string; cta: string; onClick: () => void };
+  const moves: Move[] = [];
+  if (!profile.interviewDone)
+    moves.push({ icon: "✎", title: "Take the virtual interview", desc: "The single biggest jump in match quality — wire deeper connections.", cta: "Start", onClick: () => navigate("/app/interview") });
+  if (newMatches.length)
+    moves.push({ icon: "★", title: `Review ${newMatches.length} new report${newMatches.length === 1 ? "" : "s"}`, desc: "Fresh introductions are waiting for your approval.", cta: "Review", onClick: () => navigate("/app/matches") });
+  if (insights.some((i) => i.status === "pending"))
+    moves.push({ icon: "↻", title: "Approve learning updates", desc: "Keep your brain evolving with your latest feedback.", cta: "Open", onClick: () => navigate("/app/learning") });
+  if (!agentRunning && !atFreeLimit && matches.length === 0)
+    moves.push({ icon: "◈", title: "Start your first matching round", desc: `${profile.agentName} will scan the network and bring back reports.`, cta: "Run", onClick: store.runAgent });
+  if (atFreeLimit)
+    moves.push({ icon: "♛", title: "Upgrade to Premium", desc: "Unlock unlimited rounds, every category, and video scheduling.", cta: "Upgrade", onClick: () => navigate("/app/premium") });
+  moves.push({ icon: "🛡", title: "Tune your privacy vault", desc: "Decide exactly what your agent shares — and when.", cta: "Manage", onClick: () => navigate("/app/privacy") });
+  const topMoves = moves.slice(0, 3);
 
   return (
     <Layout>
@@ -231,12 +214,39 @@ export default function Dashboard() {
                         <CountUp end={d.count} /> seeking
                       </span>
                     </div>
-                    <DemandBar pct={(d.count / DEMAND_MAX) * 100} active={active} delay={200 + i * 120} />
+                    <GrowBar pct={(d.count / DEMAND_MAX) * 100} active={active} delay={200 + i * 120} light />
                   </div>
                 </div>
               );
             })}
           </div>
+        </div>
+      </div>
+
+      {/* Recommended next moves (LIGHT premium band) */}
+      <div className="section-light card-light mb-8 p-6 sm:p-8">
+        <div className="mb-5 flex items-center gap-2">
+          <span className="text-xs font-semibold uppercase tracking-[0.25em] text-bronze">Recommended next moves</span>
+          <LiveDot tone="gold" />
+        </div>
+        <div className="grid gap-4 md:grid-cols-3">
+          {topMoves.map((m, i) => (
+            <Reveal key={m.title} delay={i * 90}>
+              <button
+                onClick={m.onClick}
+                className="card-light-hover group flex h-full w-full flex-col rounded-2xl border border-stone-200 bg-white/70 p-5 text-left"
+              >
+                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-gold-300/40 to-bronze/20 text-lg text-bronze">
+                  {m.icon}
+                </div>
+                <h4 className="font-display text-lg font-semibold text-stone-900">{m.title}</h4>
+                <p className="mt-1 flex-1 text-sm leading-relaxed text-stone-600">{m.desc}</p>
+                <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-bronze transition-transform group-hover:translate-x-1">
+                  {m.cta} →
+                </span>
+              </button>
+            </Reveal>
+          ))}
         </div>
       </div>
 

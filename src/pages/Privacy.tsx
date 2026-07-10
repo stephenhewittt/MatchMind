@@ -1,6 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
-import { EmptyState, SectionTitle, TierPill, TierSelect } from "../components/ui";
+import CountUp from "../components/CountUp";
+import Reveal from "../components/Reveal";
+import { EmptyState, LiveDot, SectionTitle, TierPill, TierSelect } from "../components/ui";
 import { useStore } from "../lib/store";
 import { TIER_META } from "../lib/types";
 import type { PrivacyTier } from "../lib/types";
@@ -38,23 +40,34 @@ export default function Privacy() {
         sub={`${profile.agentName} uses everything below to find compatibility, but only reveals each fact according to its rule. Change any rule, any time.`}
       />
 
-      {/* Tier summary */}
-      <div className="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-5">
-        {counts.map(({ tier, count }) => (
-          <div key={tier} className="card p-4 text-center">
-            <div className="font-display text-2xl font-semibold text-zinc-100">{count}</div>
-            <div className="mt-1.5 flex justify-center"><TierPill tier={tier} /></div>
-          </div>
-        ))}
-      </div>
-
-      <div className="card mb-6 border-gold-600/30 p-5">
-        <p className="text-sm leading-relaxed text-zinc-400">
-          <span className="font-medium text-gold-300">Core principle:</span> your agent should know enough to find the
-          right match, but only share what you're ready to reveal. In agent-to-agent conversations, only{" "}
-          <span className="text-emerald-300">Share Immediately</span> facts are ever voiced — everything else is used
-          silently for compatibility filtering.
-        </p>
+      {/* Tier summary + principle (LIGHT) */}
+      <div className="section-light card-light mb-8 p-6 sm:p-8">
+        <div className="mb-6 flex items-center justify-between">
+          <div className="text-xs font-semibold uppercase tracking-[0.25em] text-bronze">Your vault at a glance</div>
+          <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-600">
+            <LiveDot /> Sealed & encrypted
+          </span>
+        </div>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+          {counts.map(({ tier, count }, i) => (
+            <Reveal key={tier} delay={i * 70}>
+              <div className="card-light-hover rounded-2xl border border-stone-200 bg-white/70 p-4 text-center">
+                <div className="font-display text-4xl font-bold gold-text-warm">
+                  <CountUp end={count} />
+                </div>
+                <div className="mt-2 flex justify-center"><TierPill tier={tier} /></div>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+        <div className="mt-6 rounded-2xl border border-bronze/20 bg-gradient-to-br from-gold-300/15 to-transparent p-5">
+          <p className="text-base leading-relaxed text-stone-700">
+            <span className="font-semibold text-bronze">Core principle:</span> your agent should know enough to find the
+            right match, but only share what you're ready to reveal. In agent-to-agent conversations, only{" "}
+            <span className="font-medium text-emerald-700">Share Immediately</span> facts are ever voiced — everything
+            else is used silently for compatibility filtering.
+          </p>
+        </div>
       </div>
 
       {/* Fact ledger */}
@@ -79,17 +92,23 @@ export default function Privacy() {
         )}
       </div>
 
-      {/* Tier legend */}
-      <div className="mt-8 grid gap-3 md:grid-cols-2">
-        {tiers.map((t) => (
-          <div key={t} className="card flex items-start gap-3 p-4">
-            <TierPill tier={t} />
-            <div>
-              <div className="text-sm font-medium text-zinc-200">{TIER_META[t].label}</div>
-              <p className="mt-0.5 text-xs leading-relaxed text-zinc-500">{TIER_META[t].description}</p>
-            </div>
-          </div>
-        ))}
+      {/* Tier legend (LIGHT) */}
+      <div className="section-light card-light mt-8 p-6 sm:p-8">
+        <h3 className="mb-1 font-display text-2xl font-bold text-stone-900">The five disclosure tiers</h3>
+        <p className="mb-6 text-base text-stone-600">Assign any fact to any tier — your agent honors it in every conversation.</p>
+        <div className="grid gap-3 md:grid-cols-2">
+          {tiers.map((t, i) => (
+            <Reveal key={t} delay={(i % 2) * 90}>
+              <div className="card-light-hover flex items-start gap-3 rounded-2xl border border-stone-200 bg-white/70 p-4">
+                <TierPill tier={t} />
+                <div>
+                  <div className="font-medium text-stone-900">{TIER_META[t].label}</div>
+                  <p className="mt-0.5 text-sm leading-relaxed text-stone-600">{TIER_META[t].description}</p>
+                </div>
+              </div>
+            </Reveal>
+          ))}
+        </div>
       </div>
 
       <div className="mt-10 flex items-center justify-between rounded-2xl border border-rose-900/40 bg-rose-950/20 p-5">
