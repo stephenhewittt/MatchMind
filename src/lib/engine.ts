@@ -190,14 +190,14 @@ export function buildTranscript(profile: UserProfile, scored: ScoredCandidate): 
   );
 
   return [
-    { from: "you", agent: you, text: toneOpeners[profile.agentTone] },
-    { from: "them", agent: them, text: `Hello ${you}. Happy to talk. ${candidate.name.split(" ")[0]} is open to ${INTENT_META[intent].label.toLowerCase()} connections — headline: "${candidate.headline}." What can you share?` },
-    { from: "you", agent: you, text: `Openly: interests include ${intro}. Based in ${profile.city || "the area"}. I'm seeing overlap around ${sharedLine}.` },
-    { from: "you", agent: you, text: q },
-    { from: "them", agent: them, text: a },
-    { from: "you", agent: you, text: privacyBeat },
-    { from: "them", agent: them, text: `Understood — same on my side. ${candidate.agentName}'s ledger shows no conflicts with your stated dealbreakers. I'd rate this exchange promising.` },
-    { from: "you", agent: you, text: `Agreed. I'll recommend an introduction to my principal with a full compatibility report. Nothing proceeds unless both humans approve.` },
+    { from: "you", agent: you, text: toneOpeners[profile.agentTone], phase: "intro" },
+    { from: "them", agent: them, text: `Hello ${you}. Happy to talk. ${candidate.name.split(" ")[0]} is open to ${INTENT_META[intent].label.toLowerCase()} connections — headline: "${candidate.headline}." What can you share?`, phase: "acquaint" },
+    { from: "you", agent: you, text: `Openly: interests include ${intro}. Based in ${profile.city || "the area"}. I'm seeing overlap around ${sharedLine}.`, phase: "share" },
+    { from: "you", agent: you, text: q, phase: "qualify" },
+    { from: "them", agent: them, text: a, phase: "answer" },
+    { from: "you", agent: you, text: privacyBeat, phase: "privacy" },
+    { from: "them", agent: them, text: `Understood — same on my side. ${candidate.agentName}'s ledger shows no conflicts with your stated dealbreakers. I'd rate this exchange promising.`, phase: "verdict" },
+    { from: "you", agent: you, text: `Agreed. I'll recommend an introduction to my principal with a full compatibility report. Nothing proceeds unless both humans approve.`, phase: "recommend" },
   ];
 }
 

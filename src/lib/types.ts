@@ -92,10 +92,21 @@ export interface Candidate {
   privateNote: string;
 }
 
+export type ConversationPhase =
+  | "intro"
+  | "acquaint"
+  | "share"
+  | "qualify"
+  | "answer"
+  | "privacy"
+  | "verdict"
+  | "recommend";
+
 export interface AgentMessage {
   from: "you" | "them";
   agent: string;
   text: string;
+  phase?: ConversationPhase;
 }
 
 export interface DimensionScore {

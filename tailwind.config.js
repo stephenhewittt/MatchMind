@@ -63,6 +63,18 @@ export default {
           "0%": { transform: "translateX(0)" },
           "100%": { transform: "translateX(-50%)" },
         },
+        beam: {
+          "0%": { left: "0%", opacity: "0" },
+          "12%": { opacity: "1" },
+          "88%": { opacity: "1" },
+          "100%": { left: "100%", opacity: "0" },
+        },
+        beamBack: {
+          "0%": { right: "0%", opacity: "0" },
+          "12%": { opacity: "1" },
+          "88%": { opacity: "1" },
+          "100%": { right: "100%", opacity: "0" },
+        },
       },
       animation: {
         "fade-up": "fadeUp 0.5s ease-out both",
@@ -71,6 +83,8 @@ export default {
         typing: "typing 1.2s ease-in-out infinite",
         float: "float 6s ease-in-out infinite",
         "float-slow": "float 9s ease-in-out infinite",
+        beam: "beam 1.9s linear infinite",
+        "beam-back": "beamBack 1.9s linear infinite",
       },
     },
   },

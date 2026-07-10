@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Layout from "../components/Layout";
+import AgentConversation from "../components/AgentConversation";
 import { AgentOrb, Avatar, Bar, EmptyState, ScoreRing } from "../components/ui";
 import { useStore } from "../lib/store";
 import { INTENT_META } from "../lib/types";
@@ -21,7 +22,6 @@ export default function MatchDetail() {
   const candidate = match ? candidates.find((c) => c.id === match.candidateId) : undefined;
 
   const [chatInput, setChatInput] = useState("");
-  const [showTranscript, setShowTranscript] = useState(false);
   const [showSlots, setShowSlots] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
@@ -98,6 +98,11 @@ export default function MatchDetail() {
         )}
       </div>
 
+      {/* Featured: the agent-to-agent conversation */}
+      <div className="mb-6">
+        <AgentConversation match={match} yourAgent={profile.agentName} candidateAgent={candidate.agentName} />
+      </div>
+
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Report */}
         <div className="space-y-6">
@@ -138,37 +143,6 @@ export default function MatchDetail() {
             </ul>
             <div className="hairline my-4" />
             <p className="text-xs text-zinc-500"><span className="text-gold-500">Recommended next step:</span> {match.nextStep}</p>
-          </div>
-
-          {/* Agent transcript */}
-          <div className="card p-6">
-            <button onClick={() => setShowTranscript(!showTranscript)} className="flex w-full items-center justify-between text-left">
-              <h3 className="font-display text-lg font-semibold text-zinc-200">
-                Agent-to-agent transcript
-                <span className="ml-2 text-xs font-normal text-zinc-500">{profile.agentName} ⇄ {candidate.agentName}</span>
-              </h3>
-              <span className="text-gold-500">{showTranscript ? "−" : "+"}</span>
-            </button>
-            {showTranscript && (
-              <div className="mt-4 space-y-3">
-                {match.transcript.map((msg, i) => (
-                  <div key={i} className={`flex gap-3 ${msg.from === "you" ? "" : "flex-row-reverse"}`}>
-                    <AgentOrb size="h-7 w-7" />
-                    <div className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
-                      msg.from === "you"
-                        ? "rounded-tl-sm bg-gold-500/10 text-zinc-200"
-                        : "rounded-tr-sm bg-ink-700 text-zinc-300"
-                    }`}>
-                      <div className="mb-0.5 text-[10px] font-semibold uppercase tracking-wider text-gold-500/80">{msg.agent}</div>
-                      {msg.text}
-                    </div>
-                  </div>
-                ))}
-                <p className="pt-1 text-[11px] text-zinc-600">
-                  🛡 Only facts you labeled "Share Immediately" were voiced. Everything else stayed in your vault.
-                </p>
-              </div>
-            )}
           </div>
         </div>
 
