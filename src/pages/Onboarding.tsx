@@ -1,14 +1,14 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import BrainCanvas from "../components/BrainCanvas";
-import { Chip, Logo, TierPill, TierSelect } from "../components/ui";
+import { AgentOrb, Chip, Logo, TierPill, TierSelect } from "../components/ui";
 import { AGENT_NAMES, DEALBREAKER_POOL, INTEREST_POOL, LIFESTYLE_POOL, VALUE_POOL } from "../lib/data";
 import { summarizeProfile } from "../lib/engine";
 import { uid, useStore } from "../lib/store";
 import { INTENT_META, TIER_META } from "../lib/types";
 import type { FactCategory, MatchIntent, PrivacyTier, ProfileFact, UserProfile } from "../lib/types";
 
-const STEPS = ["Intent", "Basics", "Guided Questions", "Enrich", "Privacy Vault", "Agent Summary"] as const;
+const STEPS = ["Intent", "Basics", "Questions", "Enrich", "Privacy", "Summary"] as const;
 
 const SOCIALS = ["LinkedIn", "Instagram", "X", "TikTok", "YouTube", "GitHub", "Substack", "Personal website"];
 const DOC_TYPES = ["Resume", "Portfolio", "Pitch deck", "Company summary", "LinkedIn export", "Project examples"];
@@ -36,6 +36,8 @@ export default function Onboarding() {
   const { saveProfile } = useStore();
 
   const [step, setStep] = useState(0);
+  const [dir, setDir] = useState(1);
+  const [typedSummary, setTypedSummary] = useState("");
   const [intents, setIntents] = useState<MatchIntent[]>([]);
   const [name, setName] = useState("");
   const [age, setAge] = useState("");
@@ -99,8 +101,44 @@ export default function Onboarding() {
 
   const next = () => {
     if (step === 2) setFacts(buildFacts());
+    setDir(1);
     setStep((s) => Math.min(s + 1, STEPS.length - 1));
   };
+
+  const back = () => {
+    if (step === 0) return navigate("/");
+    setDir(-1);
+    setStep((s) => s - 1);
+  };
+
+  // Live "neurons forming" count — a playful readout of how much of the brain is built.
+  const neuronCount =
+    intents.length * 3 +
+    interests.length +
+    values.length +
+    lifestyle.length +
+    dealbreakers.length +
+    (name.trim() ? 1 : 0) +
+    (city.trim() ? 1 : 0) +
+    (headline.trim() ? 2 : 0) +
+    (goals.trim() ? 3 : 0) +
+    (sensitive.trim() ? 3 : 0) +
+    (professional.trim() ? 3 : 0) +
+    linked.length * 2 +
+    docs.length * 2;
+
+  // Typewriter reveal of the agent summary on the final step.
+  useEffect(() => {
+    if (step !== 5) return;
+    setTypedSummary("");
+    let i = 0;
+    const id = setInterval(() => {
+      i += 2;
+      setTypedSummary(summary.slice(0, i));
+      if (i >= summary.length) clearInterval(id);
+    }, 16);
+    return () => clearInterval(id);
+  }, [step, summary]);
 
   const finish = () => {
     saveProfile({ ...draftProfile, summary, summaryApproved: true });
@@ -113,39 +151,55 @@ export default function Onboarding() {
         <button onClick={() => navigate("/")}>
           <Logo size="text-2xl" />
         </button>
-        <span className="text-xs uppercase tracking-widest text-zinc-500">
-          Step {step + 1} of {STEPS.length}
-        </span>
+        <div className="flex items-center gap-3">
+          <div className="hidden items-center gap-2 rounded-full border border-gold-600/30 bg-gold-500/5 px-3 py-1.5 sm:flex">
+            <AgentOrb active size="h-4 w-4" />
+            <span className="text-xs font-medium tabular-nums text-gold-300">
+              {neuronCount} neuron{neuronCount === 1 ? "" : "s"} forming
+            </span>
+          </div>
+          <span className="text-xs uppercase tracking-widest text-zinc-500">
+            Step {step + 1} of {STEPS.length}
+          </span>
+        </div>
       </div>
 
       {/* Progress */}
       <div className="mb-10 flex items-center gap-2">
         {STEPS.map((label, i) => (
           <div key={label} className="flex-1">
-            <div className={`h-1 rounded-full transition-all duration-500 ${i <= step ? "bg-gradient-to-r from-gold-600 to-gold-400" : "bg-ink-700"}`} />
-            <div className={`mt-2 hidden text-[10px] uppercase tracking-wider sm:block ${i === step ? "text-gold-400" : "text-zinc-600"}`}>{label}</div>
+            <div className={`h-1 overflow-hidden rounded-full transition-all duration-500 ${i <= step ? "bg-gradient-to-r from-gold-600 to-gold-400" : "bg-ink-700"}`}>
+              {i === step && <div className="h-full w-full animate-shimmer bg-gradient-to-r from-gold-500 via-gold-200 to-gold-500 bg-[length:200%_100%]" />}
+            </div>
+            <div className={`mt-2 hidden items-center gap-1 whitespace-nowrap text-[10px] uppercase tracking-wider transition-colors duration-300 sm:flex ${i === step ? "text-gold-400" : i < step ? "text-gold-600/70" : "text-zinc-600"}`}>
+              {i < step && <span className="animate-pop text-gold-500">✓</span>}
+              {label}
+            </div>
           </div>
         ))}
       </div>
 
-      <div className="animate-fade-up" key={step}>
+      <div key={step} className={dir === 1 ? "animate-step-in-right" : "animate-step-in-left"}>
         {step === 0 && (
           <>
             <h1 className="font-display text-3xl font-semibold text-zinc-100">What are you looking for?</h1>
             <p className="mt-2 text-sm text-zinc-500">Pick every category that applies — your agent matches across all of them.</p>
             <div className="mt-8 grid gap-4 sm:grid-cols-2">
-              {(Object.keys(INTENT_META) as MatchIntent[]).map((intent) => {
+              {(Object.keys(INTENT_META) as MatchIntent[]).map((intent, idx) => {
                 const active = intents.includes(intent);
                 return (
                   <button
                     key={intent}
                     onClick={() => toggle(intents, setIntents, intent)}
-                    className={`card card-hover p-5 text-left transition-all ${active ? "border-gold-500/70 shadow-gold-glow" : ""}`}
+                    style={{ animationDelay: `${idx * 70}ms` }}
+                    className={`card card-hover animate-fade-up p-5 text-left transition-all duration-300 hover:-translate-y-1 active:scale-[0.98] ${active ? "-translate-y-0.5 border-gold-500/70 shadow-gold-glow" : ""}`}
                   >
                     <div className="flex items-center gap-3">
-                      <span className={`text-xl ${active ? "text-gold-400" : "text-gold-600/60"}`}>{INTENT_META[intent].icon}</span>
+                      <span className={`text-xl transition-transform duration-300 ${active ? "scale-125 text-gold-400" : "text-gold-600/60"}`}>{INTENT_META[intent].icon}</span>
                       <span className="font-display text-lg font-semibold text-zinc-100">{INTENT_META[intent].label}</span>
-                      {active && <span className="ml-auto text-gold-400">✓</span>}
+                      {active && (
+                        <span className="ml-auto flex h-5 w-5 animate-pop items-center justify-center rounded-full bg-gold-500 text-[11px] font-bold text-ink-950">✓</span>
+                      )}
                     </div>
                     <p className="mt-2 text-xs leading-relaxed text-zinc-500">{INTENT_META[intent].blurb}</p>
                   </button>
@@ -346,9 +400,12 @@ export default function Onboarding() {
                 it will work from — approve it, or go back and edit anything.
               </p>
             </div>
-            <div className="card mt-8 border-gold-600/40 p-8 shadow-gold-glow">
+            <div className="card mt-8 animate-fade-up border-gold-600/40 p-8 shadow-gold-glow">
               <div className="mb-4 text-xs font-semibold uppercase tracking-[0.25em] text-gold-500">Private agent summary</div>
-              <p className="font-display text-xl leading-relaxed text-zinc-200">{summary}</p>
+              <p className="font-display text-xl leading-relaxed text-zinc-200">
+                {typedSummary}
+                {typedSummary.length < summary.length && <span className="ml-0.5 inline-block h-5 w-0.5 animate-pulse bg-gold-400 align-middle" />}
+              </p>
               <div className="hairline my-6" />
               <div className="flex flex-wrap gap-4 text-xs text-zinc-500">
                 <span>◈ {facts.length} facts in vault</span>
@@ -365,16 +422,18 @@ export default function Onboarding() {
       </div>
 
       <div className="mt-12 flex items-center justify-between">
-        <button onClick={() => (step === 0 ? navigate("/") : setStep(step - 1))} className="btn-ghost">
+        <button onClick={back} className="btn-ghost">
           Back
         </button>
         {step < STEPS.length - 1 ? (
-          <button onClick={next} disabled={!canContinue} className="btn-gold">
-            Continue →
+          <button onClick={next} disabled={!canContinue} className="btn-gold group">
+            Continue
+            <span className="transition-transform duration-200 group-hover:translate-x-1">→</span>
           </button>
         ) : (
-          <button onClick={finish} className="btn-gold px-8">
-            Approve & activate {agentName} ◈
+          <button onClick={finish} className="btn-gold group px-8">
+            Approve &amp; activate {agentName}
+            <span className="transition-transform duration-500 group-hover:rotate-180">◈</span>
           </button>
         )}
       </div>

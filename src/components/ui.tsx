@@ -85,9 +85,9 @@ export function Chip({
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-full border px-3.5 py-1.5 text-sm transition-all duration-200 ${
+      className={`rounded-full border px-3.5 py-1.5 text-sm transition-all duration-200 hover:-translate-y-0.5 active:scale-90 ${
         active
-          ? "border-gold-500 bg-gold-500/15 text-gold-300 shadow-gold-glow"
+          ? "scale-105 border-gold-500 bg-gold-500/15 text-gold-300 shadow-gold-glow"
           : "border-ink-600 bg-ink-850 text-zinc-400 hover:border-gold-600/50 hover:text-zinc-200"
       } ${onClick ? "cursor-pointer" : "cursor-default"}`}
     >

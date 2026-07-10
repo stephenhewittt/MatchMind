@@ -75,6 +75,19 @@ export default {
           "88%": { opacity: "1" },
           "100%": { right: "100%", opacity: "0" },
         },
+        stepInRight: {
+          "0%": { opacity: "0", transform: "translateX(28px)" },
+          "100%": { opacity: "1", transform: "translateX(0)" },
+        },
+        stepInLeft: {
+          "0%": { opacity: "0", transform: "translateX(-28px)" },
+          "100%": { opacity: "1", transform: "translateX(0)" },
+        },
+        pop: {
+          "0%": { transform: "scale(0)" },
+          "60%": { transform: "scale(1.25)" },
+          "100%": { transform: "scale(1)" },
+        },
       },
       animation: {
         "fade-up": "fadeUp 0.5s ease-out both",
@@ -85,6 +98,9 @@ export default {
         "float-slow": "float 9s ease-in-out infinite",
         beam: "beam 1.9s linear infinite",
         "beam-back": "beamBack 1.9s linear infinite",
+        "step-in-right": "stepInRight 0.5s cubic-bezier(0.22,1,0.36,1) both",
+        "step-in-left": "stepInLeft 0.5s cubic-bezier(0.22,1,0.36,1) both",
+        pop: "pop 0.35s ease-out both",
       },
     },
   },
