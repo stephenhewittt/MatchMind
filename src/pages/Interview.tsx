@@ -139,11 +139,11 @@ export default function Interview() {
   return (
     <Layout>
       <div className="mb-6">
-        <div className="mb-2 text-xs font-semibold uppercase tracking-[0.25em] text-gold-500">Virtual Interview</div>
-        <h2 className="font-display text-3xl font-semibold text-zinc-100">A private conversation that trains your agent</h2>
+        <div className="mb-2 text-xs font-semibold uppercase tracking-[0.25em] text-gold-500">Virtual Interview · deepens your neural profile</div>
+        <h2 className="font-display text-3xl font-bold tracking-tight text-zinc-100">A private conversation that wires your virtual brain</h2>
         <p className="mt-2 max-w-2xl text-sm text-zinc-400">
           Text, voice, or video-style — the interviewer asks thoughtful follow-ups to understand your personality,
-          goals, values, and boundaries. Everything stays in your vault.
+          goals, values, and boundaries. Every answer becomes a new connection in your digital mind, sealed in your vault.
         </p>
       </div>
 

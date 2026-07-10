@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
-import { AgentOrb, Avatar, EmptyState, ScoreRing, SectionTitle } from "../components/ui";
+import BrainCanvas from "../components/BrainCanvas";
+import { AgentOrb, Avatar, Bar, EmptyState, ScoreRing, SectionTitle } from "../components/ui";
 import { useStore } from "../lib/store";
 import { INTENT_META, TIER_META } from "../lib/types";
 
@@ -35,6 +36,21 @@ export default function Dashboard() {
   const mutual = matches.filter((m) => m.status === "mutual");
   const guarded = profile.facts.filter((f) => TIER_META[f.tier].rank >= 3).length;
   const atFreeLimit = !profile.premium && matches.length >= freeMatchLimit;
+
+  const approvedInsights = insights.filter((i) => i.status === "approved").length;
+  const neural = Math.min(
+    100,
+    22 +
+      Math.min(profile.facts.length * 4, 40) +
+      (profile.interviewDone ? 16 : 0) +
+      approvedInsights * 5 +
+      Math.min(matches.filter((m) => m.feedback).length * 4, 12),
+  );
+  const neuralHint = !profile.interviewDone
+    ? "Complete the virtual interview to wire deeper connections (+16%)."
+    : insights.some((i) => i.status === "pending")
+      ? "Review pending learning updates to keep your brain evolving."
+      : "Rate matches and take calls — every interaction adds synapses.";
 
   return (
     <Layout>
@@ -75,6 +91,37 @@ export default function Dashboard() {
               </button>
             )}
           </div>
+        </div>
+      </div>
+
+      {/* Neural profile */}
+      <div className="card relative mb-6 overflow-hidden p-6 sm:p-8">
+        <div className="flex flex-col items-center gap-6 sm:flex-row">
+          <div className="relative shrink-0">
+            <BrainCanvas size={170} points={190} speed={0.8} interactive={false} />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="rounded-full bg-ink-950/70 px-2.5 py-1 font-display text-lg font-bold text-gold-300 backdrop-blur-sm">
+                {neural}%
+              </span>
+            </div>
+          </div>
+          <div className="w-full flex-1">
+            <div className="mb-1 text-xs font-semibold uppercase tracking-[0.25em] text-gold-500">Virtual brain</div>
+            <h3 className="font-display text-xl font-semibold text-zinc-100">
+              Your neural profile is {neural}% formed
+            </h3>
+            <p className="mt-1 text-sm text-zinc-500">{neuralHint}</p>
+            <div className="mt-4 grid gap-3 sm:grid-cols-3">
+              <Bar label="Identity neurons" score={Math.min(100, profile.facts.length * 8)} />
+              <Bar label="Depth (interview)" score={profile.interviewDone ? 100 : 10} />
+              <Bar label="Learned synapses" score={Math.min(100, approvedInsights * 25 + matches.filter((m) => m.feedback).length * 15)} />
+            </div>
+          </div>
+          {!profile.interviewDone && (
+            <button onClick={() => navigate("/app/interview")} className="btn-ghost shrink-0 text-sm">
+              Deepen it →
+            </button>
+          )}
         </div>
       </div>
 

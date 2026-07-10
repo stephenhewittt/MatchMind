@@ -26,8 +26,8 @@ export default {
         midnight: "#101828",
       },
       fontFamily: {
-        display: ["'Cormorant Garamond'", "Georgia", "serif"],
-        sans: ["'Outfit'", "system-ui", "sans-serif"],
+        display: ["'Space Grotesk'", "system-ui", "sans-serif"],
+        sans: ["'Inter'", "system-ui", "sans-serif"],
       },
       boxShadow: {
         "gold-glow": "0 0 24px rgba(217,178,92,0.18)",
@@ -51,12 +51,22 @@ export default {
           "0%, 60%, 100%": { transform: "translateY(0)", opacity: "0.4" },
           "30%": { transform: "translateY(-4px)", opacity: "1" },
         },
+        float: {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-10px)" },
+        },
+        scanline: {
+          "0%": { transform: "translateY(-100%)" },
+          "100%": { transform: "translateY(100%)" },
+        },
       },
       animation: {
         "fade-up": "fadeUp 0.5s ease-out both",
         "pulse-gold": "pulseGold 2.2s ease-in-out infinite",
         shimmer: "shimmer 3s linear infinite",
         typing: "typing 1.2s ease-in-out infinite",
+        float: "float 6s ease-in-out infinite",
+        "float-slow": "float 9s ease-in-out infinite",
       },
     },
   },

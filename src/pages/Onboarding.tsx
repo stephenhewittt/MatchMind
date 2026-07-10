@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import BrainCanvas from "../components/BrainCanvas";
 import { Chip, Logo, TierPill, TierSelect } from "../components/ui";
 import { AGENT_NAMES, DEALBREAKER_POOL, INTEREST_POOL, LIFESTYLE_POOL, VALUE_POOL } from "../lib/data";
 import { summarizeProfile } from "../lib/engine";
@@ -334,10 +335,17 @@ export default function Onboarding() {
 
         {step === 5 && (
           <>
-            <h1 className="font-display text-3xl font-semibold text-zinc-100">Meet {agentName}</h1>
-            <p className="mt-2 text-sm text-zinc-500">
-              Here's the private profile summary your agent will work from. Approve it, or go back and edit anything.
-            </p>
+            <div className="mb-2 flex justify-center">
+              <BrainCanvas size={220} points={200} />
+            </div>
+            <div className="text-center">
+              <div className="mb-2 text-xs font-semibold uppercase tracking-[0.3em] text-gold-500">Neural profile initialized</div>
+              <h1 className="font-display text-3xl font-bold tracking-tight text-zinc-100">Meet {agentName} — your virtual brain</h1>
+              <p className="mx-auto mt-2 max-w-lg text-sm text-zinc-500">
+                From your answers, MatchMind wired the first version of your digital mind. Here's the private summary
+                it will work from — approve it, or go back and edit anything.
+              </p>
+            </div>
             <div className="card mt-8 border-gold-600/40 p-8 shadow-gold-glow">
               <div className="mb-4 text-xs font-semibold uppercase tracking-[0.25em] text-gold-500">Private agent summary</div>
               <p className="font-display text-xl leading-relaxed text-zinc-200">{summary}</p>
