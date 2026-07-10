@@ -1,9 +1,13 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
 import BrainCanvas from "../components/BrainCanvas";
+import CountUp from "../components/CountUp";
+import Reveal from "../components/Reveal";
 import { AgentOrb, Avatar, Bar, EmptyState, ScoreRing, SectionTitle } from "../components/ui";
 import { useStore } from "../lib/store";
 import { INTENT_META, TIER_META } from "../lib/types";
+import type { MatchIntent } from "../lib/types";
 
 function timeAgo(at: number): string {
   const s = Math.floor((Date.now() - at) / 1000);
@@ -12,6 +16,47 @@ function timeAgo(at: number): string {
   if (s < 3600) return `${Math.floor(s / 60)}m ago`;
   if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
   return `${Math.floor(s / 86400)}d ago`;
+}
+
+/** Live-demand figures (simulated network). */
+const DEMAND: { intent: MatchIntent; count: number }[] = [
+  { intent: "dating", count: 12480 },
+  { intent: "friendship", count: 9840 },
+  { intent: "business", count: 8630 },
+  { intent: "hobbies", count: 7320 },
+  { intent: "events", count: 5170 },
+];
+const DEMAND_MAX = Math.max(...DEMAND.map((d) => d.count));
+
+/** A bar on the light panel that grows from 0 to its target on mount. */
+function DemandBar({ pct, active, delay }: { pct: number; active: boolean; delay: number }) {
+  const [w, setW] = useState(0);
+  useEffect(() => {
+    const t = setTimeout(() => setW(pct), delay);
+    return () => clearTimeout(t);
+  }, [pct, delay]);
+  return (
+    <div className="h-2 overflow-hidden rounded-full bg-stone-200">
+      <div
+        className={`h-full rounded-full transition-[width] duration-1000 ease-out ${
+          active ? "bg-gradient-to-r from-bronze to-gold-500" : "bg-stone-300"
+        }`}
+        style={{ width: `${w}%` }}
+      />
+    </div>
+  );
+}
+
+/** Pulsing "live" dot. */
+function LiveDot({ tone = "emerald" }: { tone?: "emerald" | "gold" }) {
+  const c = tone === "gold" ? "bg-gold-400" : "bg-emerald-500";
+  const c2 = tone === "gold" ? "bg-gold-400" : "bg-emerald-400";
+  return (
+    <span className="relative flex h-2 w-2">
+      <span className={`absolute inline-flex h-full w-full animate-ping rounded-full ${c2} opacity-75`} />
+      <span className={`relative inline-flex h-2 w-2 rounded-full ${c}`} />
+    </span>
+  );
 }
 
 export default function Dashboard() {
@@ -66,20 +111,30 @@ export default function Dashboard() {
         <div className="flex flex-col items-start gap-6 sm:flex-row sm:items-center">
           <AgentOrb active={agentRunning} size="h-16 w-16" />
           <div className="flex-1">
-            <div className="font-display text-2xl font-semibold text-zinc-100">{profile.agentName}</div>
-            <p className="mt-1 text-sm text-zinc-400">
+            <div className="flex items-center gap-2">
+              <span className="font-display text-2xl font-semibold text-zinc-100">{profile.agentName}</span>
+              {agentRunning && (
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-gold-500/40 bg-gold-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-gold-300">
+                  <LiveDot tone="gold" /> Working
+                </span>
+              )}
+            </div>
+            <p className="mt-1 text-base text-zinc-400">
               {agentRunning
                 ? "In conversation with candidate agents — sharing only what you've approved."
                 : matches.length
                   ? `Standing by. ${newMatches.length} report${newMatches.length === 1 ? "" : "s"} awaiting your review.`
                   : "Trained and ready. Start a matching round to search the agent network."}
             </p>
-            <div className="mt-3 flex flex-wrap gap-4 text-xs text-zinc-500">
+            <div className="mt-3 flex flex-wrap gap-4 text-sm text-zinc-500">
               <span>◈ {profile.facts.length} facts learned</span>
               <span>🛡 {guarded} guarded details</span>
               <span>⇄ Tone: {profile.agentTone}</span>
               {profile.interviewDone && <span className="text-gold-500">✓ Interview complete</span>}
             </div>
+            {agentRunning && (
+              <div className="mt-4 h-1 w-full rounded-full bg-[length:200%_100%] animate-shimmer bg-gradient-to-r from-ink-700 via-gold-500/70 to-ink-700" />
+            )}
           </div>
           <div className="flex flex-col gap-2">
             <button onClick={store.runAgent} disabled={agentRunning || atFreeLimit} className="btn-gold">
@@ -101,16 +156,16 @@ export default function Dashboard() {
             <BrainCanvas size={170} points={190} speed={0.8} interactive={false} />
             <div className="absolute inset-0 flex items-center justify-center">
               <span className="rounded-full bg-ink-950/70 px-2.5 py-1 font-display text-lg font-bold text-gold-300 backdrop-blur-sm">
-                {neural}%
+                <CountUp end={neural} suffix="%" duration={1400} />
               </span>
             </div>
           </div>
           <div className="w-full flex-1">
             <div className="mb-1 text-xs font-semibold uppercase tracking-[0.25em] text-gold-500">Virtual brain</div>
-            <h3 className="font-display text-xl font-semibold text-zinc-100">
-              Your neural profile is {neural}% formed
+            <h3 className="font-display text-2xl font-semibold text-zinc-100">
+              Your neural profile is <span className="animate-gradient">{neural}%</span> formed
             </h3>
-            <p className="mt-1 text-sm text-zinc-500">{neuralHint}</p>
+            <p className="mt-1 text-base text-zinc-500">{neuralHint}</p>
             <div className="mt-4 grid gap-3 sm:grid-cols-3">
               <Bar label="Identity neurons" score={Math.min(100, profile.facts.length * 8)} />
               <Bar label="Depth (interview)" score={profile.interviewDone ? 100 : 10} />
@@ -125,20 +180,64 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
-        {[
-          { label: "Matches found", value: matches.length, icon: "★" },
-          { label: "Mutual connections", value: mutual.length, icon: "♛" },
-          { label: "Agent network", value: candidates.length * 214, icon: "⇄" },
-          { label: "Learning updates", value: insights.filter((i) => i.status === "approved").length, icon: "↻" },
-        ].map((s) => (
-          <div key={s.label} className="card p-5">
-            <div className="text-xs text-gold-500/80">{s.icon}</div>
-            <div className="mt-1 font-display text-3xl font-semibold text-zinc-100">{s.value.toLocaleString()}</div>
-            <div className="mt-1 text-xs text-zinc-500">{s.label}</div>
+      {/* Network at a glance (LIGHT premium band) */}
+      <div className="section-light card-light mb-8 overflow-hidden p-6 sm:p-8">
+        <div className="mb-6 flex items-center justify-between">
+          <div>
+            <div className="mb-1 text-xs font-semibold uppercase tracking-[0.25em] text-bronze">Your network at a glance</div>
+            <h3 className="font-display text-2xl font-bold text-stone-900">Minds moving around you</h3>
           </div>
-        ))}
+          <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-600">
+            <LiveDot /> Live
+          </span>
+        </div>
+
+        <div className="grid grid-cols-2 gap-6 lg:grid-cols-4">
+          {[
+            { label: "Matches found", value: matches.length, icon: "★" },
+            { label: "Mutual connections", value: mutual.length, icon: "♛" },
+            { label: "Agents you can reach", value: candidates.length * 214, icon: "⇄" },
+            { label: "Learning updates", value: approvedInsights, icon: "↻" },
+          ].map((s, i) => (
+            <Reveal key={s.label} delay={i * 80}>
+              <div>
+                <div className="text-lg text-bronze">{s.icon}</div>
+                <div className="mt-1 font-display text-4xl font-bold gold-text-warm">
+                  <CountUp end={s.value} />
+                </div>
+                <div className="mt-1 text-sm text-stone-600">{s.label}</div>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+
+        <div className="mt-8 border-t border-stone-200 pt-6">
+          <div className="mb-4 text-sm font-medium text-stone-700">Live demand by category</div>
+          <div className="grid gap-x-8 gap-y-4 sm:grid-cols-2">
+            {DEMAND.map((d, i) => {
+              const active = profile.intents.includes(d.intent);
+              return (
+                <div key={d.intent} className="flex items-center gap-3">
+                  <span className={`w-6 text-center text-lg ${active ? "text-bronze" : "text-stone-400"}`}>
+                    {INTENT_META[d.intent].icon}
+                  </span>
+                  <div className="flex-1">
+                    <div className="mb-1 flex items-center justify-between text-sm">
+                      <span className={active ? "font-medium text-stone-800" : "text-stone-500"}>
+                        {INTENT_META[d.intent].label}
+                        {active && <span className="ml-2 text-xs text-bronze">you</span>}
+                      </span>
+                      <span className="tabular-nums text-stone-500">
+                        <CountUp end={d.count} /> seeking
+                      </span>
+                    </div>
+                    <DemandBar pct={(d.count / DEMAND_MAX) * 100} active={active} delay={200 + i * 120} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-5">
@@ -146,31 +245,32 @@ export default function Dashboard() {
         <div className="lg:col-span-3">
           <h3 className="mb-4 font-display text-xl font-semibold text-zinc-100">Latest recommendations</h3>
           {matches.length === 0 ? (
-            <div className="card p-8 text-center text-sm text-zinc-500">
+            <div className="card p-8 text-center text-base text-zinc-500">
               No matches yet. {profile.agentName} is ready when you are — start a matching round above.
             </div>
           ) : (
             <div className="space-y-3">
-              {matches.slice(0, 4).map((m) => {
+              {matches.slice(0, 4).map((m, i) => {
                 const c = candidates.find((x) => x.id === m.candidateId)!;
                 return (
-                  <button
-                    key={m.id}
-                    onClick={() => navigate(`/app/matches/${m.id}`)}
-                    className="card card-hover flex w-full items-center gap-4 p-4 text-left"
-                  >
-                    <Avatar name={c.name} />
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium text-zinc-100">{c.name}</span>
-                        <span className="text-[10px] uppercase tracking-wider text-gold-500">{INTENT_META[m.intent].label}</span>
-                        {m.status === "mutual" && <span className="text-[10px] font-semibold text-emerald-400">● MUTUAL</span>}
-                        {m.status === "new" && <span className="text-[10px] font-semibold text-gold-400">● NEW</span>}
+                  <Reveal key={m.id} delay={i * 80}>
+                    <button
+                      onClick={() => navigate(`/app/matches/${m.id}`)}
+                      className="card card-hover flex w-full items-center gap-4 p-4 text-left transition-transform hover:-translate-y-0.5"
+                    >
+                      <Avatar name={c.name} />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-zinc-100">{c.name}</span>
+                          <span className="text-[10px] uppercase tracking-wider text-gold-500">{INTENT_META[m.intent].label}</span>
+                          {m.status === "mutual" && <span className="text-[10px] font-semibold text-emerald-400">● MUTUAL</span>}
+                          {m.status === "new" && <span className="text-[10px] font-semibold text-gold-400">● NEW</span>}
+                        </div>
+                        <div className="truncate text-sm text-zinc-500">{c.headline}</div>
                       </div>
-                      <div className="truncate text-xs text-zinc-500">{c.headline}</div>
-                    </div>
-                    <ScoreRing score={m.score} size={56} />
-                  </button>
+                      <ScoreRing score={m.score} size={56} />
+                    </button>
+                  </Reveal>
                 );
               })}
             </div>
@@ -179,14 +279,17 @@ export default function Dashboard() {
 
         {/* Activity feed */}
         <div className="lg:col-span-2">
-          <h3 className="mb-4 font-display text-xl font-semibold text-zinc-100">Agent activity</h3>
-          <div className="card max-h-[420px] overflow-y-auto p-2">
+          <h3 className="mb-4 flex items-center gap-2 font-display text-xl font-semibold text-zinc-100">
+            Agent activity
+            <LiveDot tone={agentRunning ? "gold" : "emerald"} />
+          </h3>
+          <div className="card max-h-[460px] overflow-y-auto p-2">
             {activity.length === 0 ? (
               <div className="p-6 text-sm text-zinc-500">Activity from {profile.agentName} will appear here.</div>
             ) : (
               <ul className="divide-y divide-ink-700/50">
                 {activity.map((a) => (
-                  <li key={a.id} className="flex gap-3 px-3 py-3 text-sm">
+                  <li key={a.id} className="flex animate-fade-up gap-3 px-3 py-3 text-sm">
                     <span className="mt-0.5 text-gold-500/90">{a.icon}</span>
                     <div>
                       <p className="leading-snug text-zinc-300">{a.text}</p>
